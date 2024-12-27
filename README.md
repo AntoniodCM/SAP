@@ -4,7 +4,7 @@ Scripts sql para SAP HANA DB
 
 Descripción
 
-Piblicación de scripts sql para SAP HANA DB con el fin de obtener información acerca de sentencias ejecutadas por usuario y consumo de memoria.
+Publicación de scripts sql para SAP HANA DB con el fin de obtener información acerca de sentencias ejecutadas por usuario y consumo de memoria.
 
 Getting Started
 
