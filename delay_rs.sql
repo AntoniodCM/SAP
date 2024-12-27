@@ -1,0 +1,92 @@
+---a DELAY
+SELECT
+REMOTE_SOURCE_NAME,
+--SUBSCRIPTION_NAME,
+TO_VARCHAR ((COLLECT_TIME), 'YYYY-MM-DD HH24:MI') COLLECT_TIME,
+AVG( CAST (STATISTIC_VALUE AS DECIMAL(10))) DELAY
+FROM
+        (
+        SELECT
+        ST2.ID,
+        ST2.REMOTE_SOURCE_NAME,
+        --ST2.SUBSCRIPTION_SCHEMA_NAME,
+        --ST2.SUBSCRIPTION_NAME,
+        --ST2.SOURCE_TABLE,
+        ST2.COLLECT_TIME,
+        '00001' AS STATISTIC_NAME,
+        TO_NVARCHAR(SECONDS_BETWEEN(TO_TIMESTAMP(ST2.STATISTIC_VALUE, 'YYYY-MM-DD HH24:MI:SS.FF7'), TO_TIMESTAMP(ST1.STATISTIC_VALUE, 'YYYY-MM-DD HH24:MI:SS.FF7'))) AS STATISTIC_VALUE
+        FROM
+                (
+                SELECT
+                ID,
+                REMOTE_SOURCE_NAME,
+                --SUBSCRIPTION_SCHEMA_NAME,
+                --SUBSCRIPTION_NAME,
+                --SOURCE_TABLE,
+                COLLECT_TIME,
+                STATISTIC_NAME,
+                STATISTIC_VALUE
+                FROM
+                "SAP_HANA_IM_DP"."sap.hana.im.dp.monitor.ds::DP_STATISTICS"
+                WHERE
+                STATISTIC_NAME IN
+                ('10016', 'Last received timestamp')
+                --AND REMOTE_SOURCE_NAME = '3009STERLING'
+                AND COLLECT_TIME > ADD_SECONDS (CURRENT_TIMESTAMP, - (86400))
+        )
+AS ST1
+INNER JOIN
+        (
+        SELECT
+        ID,
+        REMOTE_SOURCE_NAME,
+        --SUBSCRIPTION_SCHEMA_NAME,
+        --SUBSCRIPTION_NAME,
+        --SOURCE_TABLE,
+        COLLECT_TIME,
+        STATISTIC_NAME,
+        STATISTIC_VALUE
+        FROM
+        "SAP_HANA_IM_DP"."sap.hana.im.dp.monitor.ds::DP_STATISTICS"
+        WHERE
+        STATISTIC_NAME IN
+        ('10019','Last applied timestamp, for the subscription')
+        --AND REMOTE_SOURCE_NAME = '3009STERLING'
+                AND COLLECT_TIME > ADD_SECONDS (CURRENT_TIMESTAMP, - (86400))
+        )
+AS ST1
+INNER JOIN
+        (
+        SELECT
+        ID,
+        REMOTE_SOURCE_NAME,
+        --SUBSCRIPTION_SCHEMA_NAME,
+        --SUBSCRIPTION_NAME,
+        --SOURCE_TABLE,
+        COLLECT_TIME,
+        STATISTIC_NAME,
+        STATISTIC_VALUE
+        FROM
+        "SAP_HANA_IM_DP"."sap.hana.im.dp.monitor.ds::DP_STATISTICS"
+        WHERE
+        STATISTIC_NAME IN
+        ('10019','Last applied timestamp, for the subscription')
+        --AND REMOTE_SOURCE_NAME = '3009STERLING'
+        --AND SUBSCRIPTION_NAME = 'SUB_VT_STL_DB2DOM_YFS_ORDER_HEADER'
+        AND COLLECT_TIME > ADD_SECONDS (CURRENT_TIMESTAMP, - (86400))
+        )
+        AS ST2
+ON ST1.ID = ST2.ID
+AND ST1.REMOTE_SOURCE_NAME = ST2.REMOTE_SOURCE_NAME
+)
+AS T
+LEFT OUTER JOIN
+"SAP_HANA_IM_DP"."sap.hana.im.dp.monitor.ds::DP_STATISTICS_MAPPING" AS Y
+ON T.STATISTIC_NAME = Y.STATISTIC_ID
+GROUP BY
+REMOTE_SOURCE_NAME,
+--SUBSCRIPTION_NAME,
+TO_VARCHAR ((COLLECT_TIME), 'YYYY-MM-DD HH24:MI')
+ORDER BY
+REMOTE_SOURCE_NAME,--, SUBSCRIPTION_NAME,
+TO_VARCHAR ((COLLECT_TIME), 'YYYY-MM-DD HH24:MI') ASC;
