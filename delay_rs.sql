@@ -55,28 +55,6 @@ INNER JOIN
                 AND COLLECT_TIME > ADD_SECONDS (CURRENT_TIMESTAMP, - (86400))
         )
 AS ST1
-INNER JOIN
-        (
-        SELECT
-        ID,
-        REMOTE_SOURCE_NAME,
-        --SUBSCRIPTION_SCHEMA_NAME,
-        --SUBSCRIPTION_NAME,
-        --SOURCE_TABLE,
-        COLLECT_TIME,
-        STATISTIC_NAME,
-        STATISTIC_VALUE
-        FROM
-        "SAP_HANA_IM_DP"."sap.hana.im.dp.monitor.ds::DP_STATISTICS"
-        WHERE
-        STATISTIC_NAME IN
-        ('10019','Last applied timestamp, for the subscription')
-        --AND REMOTE_SOURCE_NAME = '3009STERLING'
-        --AND SUBSCRIPTION_NAME = 'SUB_VT_STL_DB2DOM_YFS_ORDER_HEADER'
-        AND COLLECT_TIME > ADD_SECONDS (CURRENT_TIMESTAMP, - (86400))
-        )
-        AS ST2
-ON ST1.ID = ST2.ID
 AND ST1.REMOTE_SOURCE_NAME = ST2.REMOTE_SOURCE_NAME
 )
 AS T
